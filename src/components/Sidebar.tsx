@@ -1,6 +1,6 @@
 import React from 'react';
 import { ViewTab } from '../types';
-import { SCHOOL_INFO } from '../data/timetable';
+import { usePlanner } from '../context/PlannerContext';
 
 interface SidebarProps {
   activeTab: ViewTab;
@@ -19,6 +19,7 @@ const navItems: { id: ViewTab; label: string; icon: string }[] = [
 ];
 
 export default function Sidebar({ activeTab, setActiveTab, isMobileMenuOpen, setIsMobileMenuOpen }: SidebarProps) {
+  const { planner } = usePlanner();
   const handleNavClick = (id: ViewTab) => {
     setActiveTab(id);
     setIsMobileMenuOpen(false);
@@ -48,7 +49,8 @@ export default function Sidebar({ activeTab, setActiveTab, isMobileMenuOpen, set
 
         <div className="px-md mb-md">
           <h2 className="font-headline-lg text-headline-lg text-primary">Mein Planer</h2>
-          <p className="font-body-md text-body-md text-on-surface-variant">Schuljahr {SCHOOL_INFO.year}</p>
+          <p className="font-body-md text-body-md text-on-surface-variant">Schuljahr {planner.schoolInfo.year}</p>
+          {planner.id === '2526' && <p className="text-xs font-bold text-primary mt-1">12.06.–03.07.2026</p>}
         </div>
 
         <nav className="flex-1 flex flex-col gap-1 overflow-y-auto">

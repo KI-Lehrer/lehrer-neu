@@ -1,9 +1,11 @@
-import { SCHOOL_INFO } from '../data/timetable';
 import { ViewTab } from '../types';
 import { formatDate, getSchoolDayProgress } from '../utils/date';
+import { usePlanner } from '../context/PlannerContext';
 
 export default function Dashboard({ navigate }: { navigate: (tab: ViewTab) => void }) {
-  const today = new Date();
+  const { planner, selectedDate } = usePlanner();
+  const today = selectedDate;
+  const { schoolInfo } = planner;
   const weekday = formatDate(today, { weekday: 'long' });
   return (
     <div className="max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop py-lg w-full">
@@ -13,7 +15,7 @@ export default function Dashboard({ navigate }: { navigate: (tab: ViewTab) => vo
           <div>
             <span className="text-xs font-bold text-primary tracking-widest uppercase mb-1 block">Lehrplaner Dashboard</span>
             <h1 className="font-headline-lg text-headline-lg text-on-surface">Guten Morgen, Herr Lüscher</h1>
-            <p className="font-body-lg text-body-lg text-on-surface-variant capitalize">{weekday} · Klasse {SCHOOL_INFO.class} · {SCHOOL_INFO.name}</p>
+            <p className="font-body-lg text-body-lg text-on-surface-variant capitalize">{weekday} · Klasse {schoolInfo.class} · {schoolInfo.name}</p>
           </div>
           <div className="flex items-center gap-4">
             <div className="px-4 py-2 bg-white border border-outline-variant rounded-full text-sm font-semibold text-on-surface shadow-sm flex items-center gap-2">
@@ -64,7 +66,7 @@ export default function Dashboard({ navigate }: { navigate: (tab: ViewTab) => vo
             <span className="text-xs font-bold text-on-secondary-container bg-secondary-container px-2.5 py-0.5 rounded-full uppercase tracking-wider">Juni</span>
           </div>
           <div>
-            <div className="text-2xl font-extrabold text-on-surface">{SCHOOL_INFO.year}</div>
+            <div className="text-2xl font-extrabold text-on-surface">{schoolInfo.year}</div>
             <div className="text-sm text-on-surface-variant font-semibold mt-1">Aktuelles Schuljahr</div>
           </div>
         </div>

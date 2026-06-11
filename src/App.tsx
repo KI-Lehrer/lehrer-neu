@@ -8,10 +8,18 @@ import Jahresuebersicht from './views/Jahresuebersicht';
 import Wochenuebersicht from './views/Wochenuebersicht';
 import Tagesuebersicht from './views/Tagesuebersicht';
 import Aufgaben from './views/Aufgaben';
+import { PLANNER_VERSIONS, PlannerVersion } from './data/plannerVersions';
+import { PlannerProvider } from './context/PlannerContext';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<ViewTab>('tagesuebersicht');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activePlanner, setActivePlanner] = useState<PlannerVersion['id']>('current');
+  const [selectedDates, setSelectedDates] = useState<Record<PlannerVersion['id'], Date>>({
+    current: PLANNER_VERSIONS.current.initialDate,
+    '2526': PLANNER_VERSIONS['2526'].initialDate,
+  });
+  const planner = PLANNER_VERSIONS[activePlanner];
 
   const navigate = (tab: ViewTab) => {
     setActiveTab(tab);
@@ -32,17 +40,23 @@ export default function App() {
   };
 
   return (
-    <div className="flex bg-background min-h-screen">
-      <Topbar toggleMobileMenu={() => setIsMobileMenuOpen((open) => !open)} navigate={navigate} />
-      <Sidebar 
-        activeTab={activeTab} 
-        setActiveTab={navigate} 
-        isMobileMenuOpen={isMobileMenuOpen} 
-        setIsMobileMenuOpen={setIsMobileMenuOpen} 
-      />
-      <main className="flex-1 lg:ml-64 pt-16 flex flex-col min-h-screen" id="main-content">
-        {renderView()}
-      </main>
-    </div>
+    <PlannerProvider value={{
+      planner,
+      selectedDate: selectedDates[activePlanner],
+      setSelectedDate: (date) => setSelectedDates((dates) => ({ ...dates, [activePlanner]: date })),
+    }}>
+      <div className="flex bg-background min-h-screen">
+        <Topbar toggleMobileMenu={() => setIsMobileMenuOpen((open) => !open)} navigate={navigate} activePlanner={activePlanner} setActivePlanner={setActivePlanner} />
+        <Sidebar
+          activeTab={activeTab}
+          setActiveTab={navigate}
+          isMobileMenuOpen={isMobileMenuOpen}
+          setIsMobileMenuOpen={setIsMobileMenuOpen}
+        />
+        <main className="flex-1 lg:ml-64 pt-16 flex flex-col min-h-screen" id="main-content">
+          {renderView()}
+        </main>
+      </div>
+    </PlannerProvider>
   );
 }

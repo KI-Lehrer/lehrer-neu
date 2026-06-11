@@ -8,6 +8,7 @@ Ein lokaler, datenschutzbewusster Planer für Unterricht, Wochenplanung und Aufg
 - Stundenplan mit Gruppenfiltern und Druckansicht
 - Automatisch gespeicherte Tages-, Wochen- und Lektionsnotizen
 - Aufgaben mit Kategorien, Filtern und Erledigt-Status
+- Umschaltbarer Planer `25/26` mit eigenem Stundenplan und Zeitraum vom 12.06.2026 bis 03.07.2026
 - JSON-Export der Tagesplanung
 - Keine Schülernamen oder Kontaktadressen im Frontend-Bundle
 

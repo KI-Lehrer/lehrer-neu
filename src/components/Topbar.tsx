@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { ViewTab } from '../types';
+import { PlannerVersion } from '../data/plannerVersions';
 
 interface TopbarProps {
   toggleMobileMenu: () => void;
   navigate: (tab: ViewTab) => void;
+  activePlanner: PlannerVersion['id'];
+  setActivePlanner: (planner: PlannerVersion['id']) => void;
 }
 
 const searchItems: Array<{ label: string; tab: ViewTab; keywords: string }> = [
@@ -15,7 +18,7 @@ const searchItems: Array<{ label: string; tab: ViewTab; keywords: string }> = [
   { label: 'Aufgaben', tab: 'aufgaben', keywords: 'todo korrekturen vorbereitung' },
 ];
 
-export default function Topbar({ toggleMobileMenu, navigate }: TopbarProps) {
+export default function Topbar({ toggleMobileMenu, navigate, activePlanner, setActivePlanner }: TopbarProps) {
   const [query, setQuery] = useState('');
   const matches = query.trim()
     ? searchItems.filter((item) => `${item.label} ${item.keywords}`.toLowerCase().includes(query.toLowerCase()))
@@ -39,6 +42,13 @@ export default function Topbar({ toggleMobileMenu, navigate }: TopbarProps) {
             menu
           </button>
           <span className="font-headline-lg text-headline-lg font-semibold text-primary">LehrerPlaner</span>
+          <div className="flex bg-surface-container-low p-1 rounded-xl" role="group" aria-label="Planer auswählen">
+            {(['current', '2526'] as const).map((id) => (
+              <button key={id} type="button" onClick={() => setActivePlanner(id)} aria-pressed={activePlanner === id} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${activePlanner === id ? 'bg-primary text-white' : 'text-on-surface-variant hover:bg-white'}`}>
+                {id === 'current' ? 'Aktuell' : '25/26'}
+              </button>
+            ))}
+          </div>
         </div>
         
         <div className="flex items-center gap-md">
@@ -76,7 +86,7 @@ export default function Topbar({ toggleMobileMenu, navigate }: TopbarProps) {
             <img 
               alt="Lehrer Profilbild" 
               className="w-8 h-8 rounded-full ml-2 border border-outline-variant object-cover" 
-              src="/assets/profile.svg"
+              src={`${import.meta.env.BASE_URL}assets/profile.svg`}
             />
           </div>
         </div>

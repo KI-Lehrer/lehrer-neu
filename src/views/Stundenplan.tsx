@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { 
-  TIMETABLE_DATA, 
   TEACHERS, 
   GROUPS, 
-  SCHOOL_INFO, 
   getSubjectDetails 
 } from '../data/timetable';
+import { usePlanner } from '../context/PlannerContext';
 
 type FilterType = 'all' | 'groupA' | 'groupB';
 
 export default function Stundenplan() {
+  const { planner } = usePlanner();
+  const { timetable, schoolInfo } = planner;
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [selectedTeacher, setSelectedTeacher] = useState<string | null>(null);
 
@@ -20,12 +21,12 @@ export default function Stundenplan() {
         <div>
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold text-primary tracking-widest uppercase block">Stundenplan</span>
-            <span className="bg-primary/10 text-primary text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">Klasse {SCHOOL_INFO.class}</span>
+            <span className="bg-primary/10 text-primary text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">Klasse {schoolInfo.class}</span>
           </div>
-          <h1 className="font-display-lg text-3xl font-extrabold text-on-surface mt-1">{SCHOOL_INFO.name} • Suhr</h1>
+          <h1 className="font-display-lg text-3xl font-extrabold text-on-surface mt-1">{schoolInfo.name} • Suhr</h1>
           <p className="font-body-md text-sm text-on-surface-variant mt-1.5 font-medium flex items-center gap-1.5">
             <span className="material-symbols-outlined text-[18px] text-primary">location_on</span>
-            {SCHOOL_INFO.address} • Schuljahr {SCHOOL_INFO.year} ({SCHOOL_INFO.level})
+            {schoolInfo.address} • Schuljahr {schoolInfo.year} ({schoolInfo.level})
           </p>
         </div>
         
@@ -46,7 +47,7 @@ export default function Stundenplan() {
         <span className="material-symbols-outlined text-amber-600">info</span>
         <div className="text-sm font-semibold text-amber-900">
           <span className="font-extrabold uppercase text-xs tracking-wider bg-amber-200/50 px-1.5 py-0.5 rounded mr-1">Heißer Tipp:</span>
-          {SCHOOL_INFO.notice}
+          {schoolInfo.notice}
         </div>
       </div>
 
@@ -151,7 +152,7 @@ export default function Stundenplan() {
               </tr>
             </thead>
             <tbody>
-              {TIMETABLE_DATA.map((row, rowIndex) => {
+              {timetable.map((row, rowIndex) => {
                 return (
                   <React.Fragment key={rowIndex}>
                     <tr className="border-b border-slate-200/65 hover:bg-slate-50/30 transition-colors">

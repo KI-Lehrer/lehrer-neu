@@ -2,11 +2,13 @@ import { FormEvent, useState } from 'react';
 import { DEFAULT_TASKS, TASK_CATEGORIES } from '../data/planner';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { PlannerTask } from '../types';
+import { usePlanner } from '../context/PlannerContext';
 
 type Filter = 'offen' | 'dringend' | 'erledigt';
 
 export default function Aufgaben() {
-  const [tasks, setTasks] = useLocalStorage<PlannerTask[]>('lehrerplaner.tasks', DEFAULT_TASKS);
+  const { planner } = usePlanner();
+  const [tasks, setTasks] = useLocalStorage<PlannerTask[]>(`${planner.storagePrefix}.tasks`, DEFAULT_TASKS);
   const [filter, setFilter] = useState<Filter>('offen');
   const [showForm, setShowForm] = useState(false);
 

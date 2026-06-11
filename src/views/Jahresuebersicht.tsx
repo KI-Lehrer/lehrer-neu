@@ -1,5 +1,5 @@
-import { SCHOOL_INFO } from '../data/timetable';
 import { formatDate, toDateKey } from '../utils/date';
+import { usePlanner } from '../context/PlannerContext';
 
 const EVENTS: Record<string, { label: string; type: 'holiday' | 'event' }> = {
   '2025-12-25': { label: 'Weihnachten', type: 'holiday' },
@@ -9,14 +9,16 @@ const EVENTS: Record<string, { label: string; type: 'holiday' | 'event' }> = {
 };
 
 export default function Jahresuebersicht() {
-  const [startYear] = SCHOOL_INFO.year.split('/').map(Number);
+  const { planner } = usePlanner();
+  const [startYear] = planner.schoolInfo.year.split('/').map(Number);
   const months = Array.from({ length: 12 }, (_, index) => new Date(startYear, 7 + index, 1));
 
   return (
     <div className="p-md md:p-margin-desktop max-w-[1440px] mx-auto space-y-lg w-full">
       <header>
         <span className="text-xs font-bold text-primary tracking-widest uppercase mb-1 block">Kalender</span>
-        <h1 className="font-display-lg text-3xl font-extrabold text-on-surface">Jahresübersicht {SCHOOL_INFO.year}</h1>
+        <h1 className="font-display-lg text-3xl font-extrabold text-on-surface">Jahresübersicht {planner.schoolInfo.year}</h1>
+        {planner.minDate && planner.maxDate && <p className="text-sm font-bold text-primary mt-2">Aktiver Planungszeitraum: {formatDate(planner.minDate, { day: '2-digit', month: '2-digit', year: 'numeric' })} bis {formatDate(planner.maxDate, { day: '2-digit', month: '2-digit', year: 'numeric' })}</p>}
         <p className="font-body-md text-sm text-on-surface-variant mt-1">Dynamischer Überblick von August bis Juli. Heute wird automatisch markiert.</p>
       </header>
       <section className="flex flex-wrap gap-md py-4 border-y border-outline-variant">

@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { SCHOOL_INFO, TIMETABLE_DATA, TimetableCell, getSubjectDetails } from '../data/timetable';
+import { TimetableCell, getSubjectDetails } from '../data/timetable';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { LessonPlan } from '../types';
-import { formatLongDate, getSchoolDayProgress, toDateKey } from '../utils/date';
+import { addDays, formatDate, formatLongDate, getSchoolDayProgress, toDateKey } from '../utils/date';
+import { usePlanner } from '../context/PlannerContext';
 
 const dayColumns = {
   1: 'mondayA',
@@ -15,15 +16,17 @@ const dayColumns = {
 const emptyPlan: LessonPlan = { topic: '', homework: '', notes: '' };
 
 export default function Tagesuebersicht() {
-  const today = new Date();
+  const { planner, selectedDate: today, setSelectedDate } = usePlanner();
   const dateKey = toDateKey(today);
   const column = dayColumns[today.getDay() as keyof typeof dayColumns];
   const lessons = column
-    ? TIMETABLE_DATA.map((row, index) => ({ index, time: row.time, cell: row[column] as TimetableCell })).filter(({ cell }) => cell.subject)
+    ? planner.timetable.map((row, index) => ({ index, time: row.time, cell: row[column] as TimetableCell })).filter(({ cell }) => cell.subject)
     : [];
-  const [dailyNotes, setDailyNotes] = useLocalStorage<Record<string, string>>('lehrerplaner.daily-notes', {});
-  const [plans, setPlans] = useLocalStorage<Record<string, LessonPlan>>('lehrerplaner.lesson-plans', {});
+  const [dailyNotes, setDailyNotes] = useLocalStorage<Record<string, string>>(`${planner.storagePrefix}.daily-notes`, {});
+  const [plans, setPlans] = useLocalStorage<Record<string, LessonPlan>>(`${planner.storagePrefix}.lesson-plans`, {});
   const [savedMessage, setSavedMessage] = useState('Automatisch gespeichert');
+  const canGoBack = !planner.minDate || today > planner.minDate;
+  const canGoForward = !planner.maxDate || today < planner.maxDate;
 
   const planKey = (lessonIndex: number) => `${dateKey}-${lessonIndex}`;
   const updatePlan = (lessonIndex: number, update: Partial<LessonPlan>) => {
@@ -50,11 +53,18 @@ export default function Tagesuebersicht() {
     <div className="max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop py-lg w-full">
       <header className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-md">
         <div>
-          <span className="font-label-md text-xs font-extrabold text-primary bg-primary/10 px-3 py-1.5 rounded-full mb-2 inline-block">Heutige Übersicht</span>
+          <span className="font-label-md text-xs font-extrabold text-primary bg-primary/10 px-3 py-1.5 rounded-full mb-2 inline-block">{planner.id === '2526' ? 'Planer 25/26' : 'Heutige Übersicht'}</span>
           <h1 className="font-display-lg text-4xl font-extrabold text-on-surface mt-1 mb-1 capitalize">{formatLongDate(today)}</h1>
-          <p className="font-body-lg text-body-lg text-on-surface-variant">Schultag {getSchoolDayProgress(today)} · Klasse {SCHOOL_INFO.class} · {SCHOOL_INFO.name}</p>
+          <p className="font-body-lg text-body-lg text-on-surface-variant">Schultag {getSchoolDayProgress(today)} · Klasse {planner.schoolInfo.class} · {planner.schoolInfo.name}</p>
         </div>
-        <div className="flex items-center gap-sm w-full md:w-auto">
+        <div className="flex flex-wrap items-center gap-sm w-full md:w-auto">
+          {planner.id === '2526' && (
+            <>
+              <button type="button" disabled={!canGoBack} onClick={() => setSelectedDate(addDays(today, -1))} className="px-3 py-2 rounded-xl border border-outline-variant bg-white disabled:opacity-30" aria-label="Vorheriger Tag">←</button>
+              <input type="date" min="2026-06-12" max="2026-07-03" value={dateKey} onChange={(event) => setSelectedDate(new Date(`${event.target.value}T12:00:00`))} aria-label="Datum auswählen" className="px-3 py-2 rounded-xl border border-outline-variant bg-white font-bold text-sm" />
+              <button type="button" disabled={!canGoForward} onClick={() => setSelectedDate(addDays(today, 1))} className="px-3 py-2 rounded-xl border border-outline-variant bg-white disabled:opacity-30" aria-label="Nächster Tag">→</button>
+            </>
+          )}
           <span className="text-xs font-bold text-secondary">{savedMessage}</span>
           <button type="button" onClick={exportDay} className="flex-1 md:flex-none px-6 py-2.5 border border-primary text-primary rounded-2xl font-bold bg-white">Exportieren</button>
         </div>
@@ -69,7 +79,8 @@ export default function Tagesuebersicht() {
             <textarea value={dailyNotes[dateKey] ?? ''} onChange={(event) => setDailyNotes((current) => ({ ...current, [dateKey]: event.target.value }))} className="w-full min-h-[240px] p-2 font-body-md text-sm text-on-surface-variant border-none bg-transparent resize-none outline-none notebook-input" placeholder="Was gibt es heute zu beachten?" aria-label="Tagesnotizen" />
           </section>
           <section className="bg-primary/5 border border-primary/20 rounded-3xl p-6">
-            <h2 className="font-bold text-primary">Datenschutz</h2>
+            <h2 className="font-bold text-primary">{planner.id === '2526' ? 'Planungszeitraum' : 'Datenschutz'}</h2>
+            {planner.minDate && planner.maxDate && <p className="text-sm font-bold text-on-surface mt-2">{formatDate(planner.minDate, { day: '2-digit', month: '2-digit', year: 'numeric' })} bis {formatDate(planner.maxDate, { day: '2-digit', month: '2-digit', year: 'numeric' })}</p>}
             <p className="text-sm text-on-surface-variant mt-2">Notizen werden nur lokal in diesem Browser gespeichert. Verwende keine besonders schützenswerten Personendaten.</p>
           </section>
         </aside>
