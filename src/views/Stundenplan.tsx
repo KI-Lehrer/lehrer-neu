@@ -23,10 +23,10 @@ export default function Stundenplan() {
             <span className="text-xs font-bold text-primary tracking-widest uppercase block">Stundenplan</span>
             <span className="bg-primary/10 text-primary text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">Klasse {schoolInfo.class}</span>
           </div>
-          <h1 className="font-display-lg text-3xl font-extrabold text-on-surface mt-1">{schoolInfo.name} • Suhr</h1>
+          <h1 className="font-display-lg text-3xl font-extrabold text-on-surface mt-1">{schoolInfo.name} · Klasse {schoolInfo.class}</h1>
           <p className="font-body-md text-sm text-on-surface-variant mt-1.5 font-medium flex items-center gap-1.5">
             <span className="material-symbols-outlined text-[18px] text-primary">location_on</span>
-            {schoolInfo.address} • Schuljahr {schoolInfo.year} ({schoolInfo.level})
+            {schoolInfo.address} · {schoolInfo.room} · Schuljahr {schoolInfo.year} ({schoolInfo.level})
           </p>
         </div>
         
@@ -230,7 +230,7 @@ export default function Stundenplan() {
                           Pause
                         </td>
                         <td className="p-2 text-center text-[11px] font-bold text-slate-500 italic" colSpan={activeFilter === 'all' ? 10 : 5}>
-                          Grosse Pause (09:55 – 10:15 Uhr)
+                          Grosse Pause ({planner.id === '2526' ? '09:50 – 10:10' : '09:55 – 10:15'} Uhr)
                         </td>
                       </tr>
                     )}
@@ -240,7 +240,7 @@ export default function Stundenplan() {
                           Mittag
                         </td>
                         <td className="p-2 text-center text-[11px] font-bold text-slate-500 italic" colSpan={activeFilter === 'all' ? 10 : 5}>
-                          Mittagspause (11:50 – 13:30 Uhr)
+                          Mittagspause ({planner.id === '2526' ? '11:45 – 13:30' : '11:50 – 13:30'} Uhr)
                         </td>
                       </tr>
                     )}
@@ -272,7 +272,7 @@ export default function Stundenplan() {
               <span className="material-symbols-outlined text-primary">diversity_3</span>
               Lehrpersonen & Kontakt
             </h3>
-            <span className="text-[10px] uppercase font-bold text-slate-400">Schule Suhr</span>
+            <span className="text-[10px] uppercase font-bold text-slate-400">{schoolInfo.name}</span>
           </div>
           
           <div className="divide-y divide-slate-100">
@@ -311,7 +311,7 @@ export default function Stundenplan() {
               <span className="material-symbols-outlined text-primary">groups</span>
               Klasseneinteilung (Gruppen)
             </h3>
-            <span className="text-[10px] uppercase font-bold bg-green-100 text-green-800 px-2 py-0.5 rounded">6B</span>
+            <span className="text-[10px] uppercase font-bold bg-green-100 text-green-800 px-2 py-0.5 rounded">{schoolInfo.class}</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -351,7 +351,7 @@ function Cell({ cell }: { cell: { subject: string; teacherCode: string } }) {
     );
   }
 
-  const { colorClass, borderClass, bgClass, room, teacherName } = getSubjectDetails(cell.subject);
+  const { colorClass, borderClass, bgClass, room: subjectRoom, teacherName } = getSubjectDetails(cell.subject);
 
   return (
     <td className="p-1.5 border-r border-slate-200/60 min-w-[70px]">
@@ -360,7 +360,7 @@ function Cell({ cell }: { cell: { subject: string; teacherCode: string } }) {
           <span className={`font-extrabold text-[13px] ${colorClass}`}>{cell.subject}</span>
           <span className="text-[10px] text-slate-500 font-semibold truncate" title={teacherName}>{teacherName}</span>
         </div>
-        <span className="text-[9px] font-bold text-slate-400 self-end uppercase tracking-wider">{room}</span>
+        <span className="text-[9px] font-bold text-slate-400 self-end uppercase tracking-wider">{subjectRoom}</span>
       </div>
     </td>
   );

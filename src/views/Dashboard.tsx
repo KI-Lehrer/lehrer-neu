@@ -33,7 +33,7 @@ export default function Dashboard({ navigate }: { navigate: (tab: ViewTab) => vo
         <div className="md:col-span-3 bg-primary rounded-3xl p-8 text-white flex flex-col justify-between shadow-lg relative overflow-hidden bento-glow-indigo min-h-[320px]">
           <div className="relative z-10">
             <span className="px-3 py-1 bg-white/20 rounded-full text-[11px] font-bold uppercase tracking-wider mb-5 inline-block">Aktuelle Lektion</span>
-            <h2 className="text-3xl md:text-4xl font-extrabold leading-tight">Regelunterricht (X) — Klasse 6B<br />Geometrie & Sachrechnen</h2>
+            <h2 className="text-3xl md:text-4xl font-extrabold leading-tight">Unterrichtsplanung — Klasse {schoolInfo.class}<br />Tagesziele & Vorbereitung</h2>
             <p className="mt-4 text-primary-fixed/80 max-w-lg font-body-md text-body-md">
               Einführung in Winkelberechnungen an Dreiecken. Die Geometrie-Mappen sind aufgeteilt, die Konstruktionshilfen liegen bereit.
             </p>
@@ -42,7 +42,7 @@ export default function Dashboard({ navigate }: { navigate: (tab: ViewTab) => vo
             <div className="flex items-center gap-md">
               <div className="flex items-center gap-1">
                 <span className="material-symbols-outlined text-[20px] text-primary-fixed">room</span>
-                <span className="font-label-md text-white">Klassenzimmer 6B</span>
+                <span className="font-label-md text-white">{schoolInfo.room}</span>
               </div>
               <div className="flex items-center gap-1">
                 <span className="material-symbols-outlined text-[20px] text-primary-fixed">schedule</span>
@@ -93,7 +93,7 @@ export default function Dashboard({ navigate }: { navigate: (tab: ViewTab) => vo
                 <span className="material-symbols-outlined text-primary">schedule</span>
                 <span className="capitalize">{weekday} verbleibend</span>
               </h3>
-              <span className="text-xs font-mono text-on-surface-variant uppercase tracking-wider font-bold bg-surface-container px-2 py-0.5 rounded">6B</span>
+              <span className="text-xs font-mono text-on-surface-variant uppercase tracking-wider font-bold bg-surface-container px-2 py-0.5 rounded">{schoolInfo.class}</span>
             </div>
             
             <div className="space-y-3">
@@ -104,7 +104,7 @@ export default function Dashboard({ navigate }: { navigate: (tab: ViewTab) => vo
                 </div>
                 <div className="w-1 self-stretch bg-primary rounded-full"></div>
                 <div className="flex-grow">
-                  <p className="font-label-md text-on-surface leading-tight">Regelunterricht (X) — Klasse 6B</p>
+                  <p className="font-label-md text-on-surface leading-tight">Unterricht — Klasse {schoolInfo.class}</p>
                   <p className="text-xs text-on-surface-variant mt-0.5">Deutsch • Lesetraining am PC</p>
                 </div>
                 <span className="material-symbols-outlined text-outline opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
@@ -143,7 +143,7 @@ export default function Dashboard({ navigate }: { navigate: (tab: ViewTab) => vo
               <label className="flex items-start gap-3 cursor-pointer group">
                 <input className="mt-1 rounded border-slate-700 bg-slate-800 text-primary focus:ring-primary focus:ring-offset-slate-900 h-4 w-4 transition-all" type="checkbox" />
                 <div className="flex flex-col">
-                  <span className="text-sm font-medium text-slate-100 group-hover:text-primary transition-colors">Absenzenkontrolle Suhr</span>
+                  <span className="text-sm font-medium text-slate-100 group-hover:text-primary transition-colors">Absenzenkontrolle {schoolInfo.name}</span>
                   <span className="text-[10px] text-error font-bold mt-0.5">Bis 08:30 Uhr</span>
                 </div>
               </label>

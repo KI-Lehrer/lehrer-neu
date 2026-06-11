@@ -35,6 +35,7 @@ export const SCHOOL_INFO = {
   year: '2025/2026',
   name: 'Schule Suhr',
   address: 'Tramstrasse 20, 5034 Suhr',
+  room: 'Klassenzimmer 6B',
   notice: 'Bei Krankheitsfall bitte bis 07:00 Uhr abmelden. Besten Dank.'
 };
 
@@ -61,10 +62,16 @@ const SUBJECT_DETAILS = {
   TTG: { teacherCode: 'TTG', room: 'TTG-Werkraum', colorClass: 'text-orange-900', borderClass: 'border-orange-500', bgClass: 'bg-orange-50' },
   CHOR: { teacherCode: 'MU', room: 'Aula O', colorClass: 'text-pink-900', borderClass: 'border-pink-500', bgClass: 'bg-pink-50' },
   X: { teacherCode: 'KLP', room: 'Klassenzimmer 6B', colorClass: 'text-slate-900', borderClass: 'border-slate-500', bgClass: 'bg-slate-50' },
+  PICTS: { teacherCode: 'KLP', room: 'Zi 07', colorClass: 'text-slate-900', borderClass: 'border-slate-500', bgClass: 'bg-slate-100' },
+  NMG: { teacherCode: 'KLP', room: 'Zi 07', colorClass: 'text-lime-950', borderClass: 'border-lime-500', bgClass: 'bg-lime-100' },
+  SPS: { teacherCode: 'KLP', room: 'Schwimmbad', colorClass: 'text-cyan-950', borderClass: 'border-cyan-500', bgClass: 'bg-cyan-100' },
+  'M&I': { teacherCode: 'KLP', room: 'Zi 07', colorClass: 'text-violet-950', borderClass: 'border-violet-500', bgClass: 'bg-violet-100' },
+  M: { teacherCode: 'KLP', room: 'Zi 07', colorClass: 'text-blue-950', borderClass: 'border-blue-500', bgClass: 'bg-blue-100' },
+  D: { teacherCode: 'KLP', room: 'Zi 07', colorClass: 'text-rose-950', borderClass: 'border-rose-400', bgClass: 'bg-rose-100' },
 } as const;
 
 // Helper to get room and teacher by subject code
-export function getSubjectDetails(subject: string): { teacher: string; teacherName: string; room: string; colorClass: string; borderClass: string; bgClass: string } {
+export function getSubjectDetails(subject: string, fallbackRoom?: string): { teacher: string; teacherName: string; room: string; colorClass: string; borderClass: string; bgClass: string } {
   const norm = subject.trim().toUpperCase();
   const key = (Object.keys(SUBJECT_DETAILS) as Array<keyof typeof SUBJECT_DETAILS>)
     .find((candidate) => norm.startsWith(candidate));
@@ -72,7 +79,7 @@ export function getSubjectDetails(subject: string): { teacher: string; teacherNa
   if (key) {
     const details = SUBJECT_DETAILS[key];
     const teacherName = TEACHERS.find((teacher) => teacher.code === details.teacherCode)?.name ?? '-';
-    return { teacher: details.teacherCode, teacherName, room: details.room, colorClass: details.colorClass, borderClass: details.borderClass, bgClass: details.bgClass };
+    return { teacher: details.teacherCode, teacherName, room: fallbackRoom ?? details.room, colorClass: details.colorClass, borderClass: details.borderClass, bgClass: details.bgClass };
   }
   
   return {
