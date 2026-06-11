@@ -1,0 +1,6 @@
+{
+  "name": "LehrerPlaner",
+  "description": "Ein Planer für Lehrkräfte mit Stundenplan, Kalender, Notizen und Kanban-Board.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
