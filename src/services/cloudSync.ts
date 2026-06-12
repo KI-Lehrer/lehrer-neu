@@ -5,7 +5,8 @@ interface CloudRecord<T> {
   updatedAt: number;
 }
 
-const getEndpoint = () => (window.localStorage.getItem('lehrerplaner.sync-endpoint') || import.meta.env.VITE_SYNC_ENDPOINT || '').replace(/\/$/, '');
+const DEFAULT_SYNC_ENDPOINT = 'https://lehrerplaner-sync.luescher-sascha.workers.dev';
+const getEndpoint = () => (window.localStorage.getItem('lehrerplaner.sync-endpoint') || import.meta.env.VITE_SYNC_ENDPOINT || DEFAULT_SYNC_ENDPOINT).replace(/\/$/, '');
 const getToken = () => window.localStorage.getItem('lehrerplaner.sync-token') || '';
 
 export const isCloudSyncConfigured = () => Boolean(getEndpoint() && getToken());

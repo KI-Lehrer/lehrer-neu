@@ -1,0 +1,10 @@
+{
+  "main_module": "worker.js",
+  "bindings": [
+    {
+      "type": "kv_namespace",
+      "name": "PLANNER_DATA",
+      "namespace_id": "fc3548f20a3447f487a703e3f7c55417"
+    }
+  ]
+}
