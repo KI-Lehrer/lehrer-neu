@@ -4,6 +4,7 @@ import { useLocalStorage } from '../hooks/useLocalStorage';
 import { LessonPlan } from '../types';
 import { addDays, formatDate, formatLongDate, getSchoolDayProgress, toDateKey } from '../utils/date';
 import { usePlanner } from '../context/PlannerContext';
+import { createDailyPlanPdf } from '../utils/pdf';
 
 const dayColumns = {
   1: 'mondayA',
@@ -68,15 +69,27 @@ export default function Tagesuebersicht() {
   };
 
   const exportDay = () => {
-    const content = JSON.stringify({
-      date: dateKey,
-      notes: dailyNotes[dateKey] ?? '',
-      lessons: lessons.map((lesson) => ({ ...lesson, plan: plans[planKey(lesson.index)] ?? emptyPlan })),
-    }, null, 2);
-    const url = URL.createObjectURL(new Blob([content], { type: 'application/json' }));
+    const pdf = createDailyPlanPdf({
+      date: formatLongDate(today),
+      school: planner.schoolInfo.name,
+      schoolClass: planner.schoolInfo.class,
+      dailyNotes: dailyNotes[dateKey] ?? '',
+      lessons: lessons.map((lesson, index) => {
+        const details = getSubjectDetails(lesson.cell.subject);
+        return {
+          number: index + 1,
+          time: lesson.time,
+          subject: lesson.cell.subject,
+          teacher: details.teacherName,
+          room: details.room,
+          plan: plans[planKey(lesson.index)] ?? emptyPlan,
+        };
+      }),
+    });
+    const url = URL.createObjectURL(pdf);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `lehrerplaner-${dateKey}.json`;
+    link.download = `tagesplanung-${dateKey}.pdf`;
     link.click();
     URL.revokeObjectURL(url);
   };
