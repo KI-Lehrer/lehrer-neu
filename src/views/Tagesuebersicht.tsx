@@ -49,11 +49,13 @@ function AutoGrowingTextarea({
 }
 
 export default function Tagesuebersicht() {
-  const { planner, selectedDate: today, setSelectedDate } = usePlanner();
+  const { planner, selectedDate: today, setSelectedDate, timetable, events } = usePlanner();
   const dateKey = toDateKey(today);
   const column = dayColumns[today.getDay() as keyof typeof dayColumns];
-  const lessons = column
-    ? planner.timetable.map((row, index) => ({ index, time: row.time, cell: row[column] as TimetableCell })).filter(({ cell }) => cell.subject)
+  const dayEvents = events.filter((event) => event.startDate <= dateKey && event.endDate >= dateKey);
+  const isDayOff = dayEvents.some((event) => event.type !== 'event');
+  const lessons = column && !isDayOff
+    ? timetable.map((row, index) => ({ index, time: row.time, cell: row[column] as TimetableCell })).filter(({ cell }) => cell.subject)
     : [];
   const [dailyNotes, setDailyNotes] = useLocalStorage<Record<string, string>>(`${planner.storagePrefix}.daily-notes`, {});
   const [plans, setPlans] = useLocalStorage<Record<string, LessonPlan>>(`${planner.storagePrefix}.lesson-plans`, {});
@@ -75,7 +77,7 @@ export default function Tagesuebersicht() {
       schoolClass: planner.schoolInfo.class,
       dailyNotes: dailyNotes[dateKey] ?? '',
       lessons: lessons.map((lesson, index) => {
-        const details = getSubjectDetails(lesson.cell.subject);
+        const details = getSubjectDetails(lesson.cell.subject, lesson.cell.room, lesson.cell.teacherCode);
         return {
           number: index + 1,
           time: lesson.time,
@@ -131,14 +133,19 @@ export default function Tagesuebersicht() {
         </aside>
 
         <div className="md:col-span-8 flex flex-col gap-gutter">
+          {dayEvents.map((event) => (
+            <div key={event.id} className={`rounded-2xl p-4 border font-bold ${event.type === 'event' ? 'bg-amber-50 border-amber-200 text-amber-900' : 'bg-rose-50 border-rose-200 text-rose-900'}`}>
+              {event.type === 'holiday' ? 'Ferien' : event.type === 'public-holiday' ? 'Feiertag' : 'Termin'}: {event.title}
+            </div>
+          ))}
           {lessons.length === 0 && (
             <div className="bg-white border border-outline-variant rounded-3xl p-10 text-center">
               <span className="material-symbols-outlined text-4xl text-outline">weekend</span>
-              <h2 className="font-bold text-on-surface mt-3">Heute sind keine Lektionen eingetragen.</h2>
+              <h2 className="font-bold text-on-surface mt-3">{isDayOff ? 'Heute findet wegen Ferien oder Feiertag kein regulärer Unterricht statt.' : 'Heute sind keine Lektionen eingetragen.'}</h2>
             </div>
           )}
           {lessons.map(({ index, time, cell }, position) => {
-            const details = getSubjectDetails(cell.subject);
+            const details = getSubjectDetails(cell.subject, cell.room, cell.teacherCode);
             const plan = plans[planKey(index)] ?? emptyPlan;
             return (
               <article key={`${time}-${cell.subject}`} className="bg-white border border-outline-variant rounded-3xl overflow-hidden shadow-sm">

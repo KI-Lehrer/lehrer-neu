@@ -6,6 +6,14 @@ export interface LessonPlan {
   notes: string;
 }
 
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  type: 'holiday' | 'public-holiday' | 'event';
+  startDate: string;
+  endDate: string;
+}
+
 export interface PlannerTask {
   id: string;
   title: string;

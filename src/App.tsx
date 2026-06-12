@@ -40,11 +40,11 @@ export default function App() {
   };
 
   return (
-    <PlannerProvider value={{
-      planner,
-      selectedDate: selectedDates[activePlanner],
-      setSelectedDate: (date) => setSelectedDates((dates) => ({ ...dates, [activePlanner]: date })),
-    }}>
+    <PlannerProvider
+      planner={planner}
+      selectedDate={selectedDates[activePlanner]}
+      setSelectedDate={(date) => setSelectedDates((dates) => ({ ...dates, [activePlanner]: date }))}
+    >
       <div className="flex bg-background min-h-screen">
         <Topbar toggleMobileMenu={() => setIsMobileMenuOpen((open) => !open)} navigate={navigate} activePlanner={activePlanner} setActivePlanner={setActivePlanner} />
         <Sidebar

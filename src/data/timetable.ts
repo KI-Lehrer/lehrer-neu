@@ -71,15 +71,16 @@ const SUBJECT_DETAILS = {
 } as const;
 
 // Helper to get room and teacher by subject code
-export function getSubjectDetails(subject: string, fallbackRoom?: string): { teacher: string; teacherName: string; room: string; colorClass: string; borderClass: string; bgClass: string } {
+export function getSubjectDetails(subject: string, fallbackRoom?: string, fallbackTeacherCode?: string): { teacher: string; teacherName: string; room: string; colorClass: string; borderClass: string; bgClass: string } {
   const norm = subject.trim().toUpperCase();
   const key = (Object.keys(SUBJECT_DETAILS) as Array<keyof typeof SUBJECT_DETAILS>)
     .find((candidate) => norm.startsWith(candidate));
 
   if (key) {
     const details = SUBJECT_DETAILS[key];
-    const teacherName = TEACHERS.find((teacher) => teacher.code === details.teacherCode)?.name ?? '-';
-    return { teacher: details.teacherCode, teacherName, room: fallbackRoom ?? details.room, colorClass: details.colorClass, borderClass: details.borderClass, bgClass: details.bgClass };
+    const teacherCode = fallbackTeacherCode || details.teacherCode;
+    const teacherName = TEACHERS.find((teacher) => teacher.code === teacherCode)?.name ?? teacherCode ?? '-';
+    return { teacher: teacherCode, teacherName, room: fallbackRoom || details.room, colorClass: details.colorClass, borderClass: details.borderClass, bgClass: details.bgClass };
   }
   
   return {

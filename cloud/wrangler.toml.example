@@ -1,0 +1,7 @@
+name = "lehrerplaner-sync"
+main = "worker.js"
+compatibility_date = "2026-06-12"
+
+[[kv_namespaces]]
+binding = "PLANNER_DATA"
+id = "HIER_DIE_KV_NAMESPACE_ID_EINTRAGEN"

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ViewTab } from '../types';
 import { PlannerVersion } from '../data/plannerVersions';
+import SyncStatus from './SyncStatus';
 
 interface TopbarProps {
   toggleMobileMenu: () => void;
@@ -52,6 +53,7 @@ export default function Topbar({ toggleMobileMenu, navigate, activePlanner, setA
         </div>
         
         <div className="flex items-center gap-md">
+          <SyncStatus navigate={navigate} />
           <div className="relative hidden md:block">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline">search</span>
             <input 

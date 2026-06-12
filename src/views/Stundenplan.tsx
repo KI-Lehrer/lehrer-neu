@@ -5,14 +5,29 @@ import {
   getSubjectDetails 
 } from '../data/timetable';
 import { usePlanner } from '../context/PlannerContext';
+import { TimetableCell, TimetableRow } from '../data/timetable';
 
 type FilterType = 'all' | 'groupA' | 'groupB';
+const emptyCell = (): TimetableCell => ({ subject: '', teacherCode: '', room: '' });
+const emptyRow = (): TimetableRow => ({
+  time: '',
+  mondayA: emptyCell(), mondayB: emptyCell(),
+  tuesdayA: emptyCell(), tuesdayB: emptyCell(),
+  wednesdayA: emptyCell(), wednesdayB: emptyCell(),
+  thursdayA: emptyCell(), thursdayB: emptyCell(),
+  fridayA: emptyCell(), fridayB: emptyCell(),
+});
 
 export default function Stundenplan() {
-  const { planner } = usePlanner();
-  const { timetable, schoolInfo } = planner;
+  const { planner, timetable, setTimetable } = usePlanner();
+  const { schoolInfo } = planner;
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [selectedTeacher, setSelectedTeacher] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const updateRow = (rowIndex: number, update: Partial<TimetableRow>) => setTimetable((current) => current.map((row, index) => index === rowIndex ? { ...row, ...update } : row));
+  const updateCell = (rowIndex: number, key: keyof Omit<TimetableRow, 'time'>, update: Partial<TimetableCell>) => {
+    setTimetable((current) => current.map((row, index) => index === rowIndex ? { ...row, [key]: { ...row[key], ...update } } : row));
+  };
 
   return (
     <div className="p-margin-mobile md:px-margin-desktop py-lg w-full max-w-[1440px] mx-auto min-h-screen space-y-8">
@@ -32,6 +47,18 @@ export default function Stundenplan() {
         
         {/* Buttons */}
         <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setIsEditing((editing) => !editing);
+              setActiveFilter('all');
+            }}
+            className={`px-5 py-2.5 rounded-2xl font-bold flex items-center gap-2 transition-all text-sm shadow-sm ${isEditing ? 'bg-primary text-white' : 'bg-primary/10 text-primary border border-primary/20'}`}
+          >
+            <span className="material-symbols-outlined text-[18px]">{isEditing ? 'done' : 'edit'}</span> {isEditing ? 'Bearbeitung beenden' : 'Stundenplan bearbeiten'}
+          </button>
+          {isEditing && <button type="button" onClick={() => setTimetable(planner.timetable)} className="px-4 py-2.5 bg-white border border-outline-variant rounded-2xl text-sm font-bold">Original wiederherstellen</button>}
+          {isEditing && <button type="button" onClick={() => setTimetable((current) => [...current, emptyRow()])} className="px-4 py-2.5 bg-white border border-outline-variant rounded-2xl text-sm font-bold">+ Lektion hinzufügen</button>}
           <button 
             type="button"
             onClick={() => window.print()}
@@ -159,14 +186,16 @@ export default function Stundenplan() {
                       {/* Time Slot column */}
                       <td className="p-3 text-center border-r border-slate-200/60 font-medium text-xs text-slate-500 bg-slate-50/40">
                         <div className="font-extrabold text-slate-700">{rowIndex + 1}. Lektion</div>
-                        <div className="font-mono text-[10px] mt-1 bg-slate-100 px-1.5 py-0.5 rounded">{row.time}</div>
+                        {isEditing
+                          ? <div className="space-y-1"><input value={row.time} onChange={(event) => updateRow(rowIndex, { time: event.target.value })} className="w-full px-1 py-1 rounded border border-primary/30 text-center text-[10px]" aria-label={`Zeit Lektion ${rowIndex + 1}`} /><button type="button" onClick={() => setTimetable((current) => current.filter((_, index) => index !== rowIndex))} className="text-[9px] font-bold text-error">Löschen</button></div>
+                          : <div className="font-mono text-[10px] mt-1 bg-slate-100 px-1.5 py-0.5 rounded">{row.time}</div>}
                       </td>
 
                       {/* Monday Cell(s) */}
                       {activeFilter === 'all' ? (
                         <>
-                          <Cell cell={row.mondayA} />
-                          <Cell cell={row.mondayB} />
+                          <Cell cell={row.mondayA} editing={isEditing} onChange={(update) => updateCell(rowIndex, 'mondayA', update)} />
+                          <Cell cell={row.mondayB} editing={isEditing} onChange={(update) => updateCell(rowIndex, 'mondayB', update)} />
                         </>
                       ) : activeFilter === 'groupA' ? (
                         <Cell cell={row.mondayA} />
@@ -177,8 +206,8 @@ export default function Stundenplan() {
                       {/* Tuesday Cell(s) */}
                       {activeFilter === 'all' ? (
                         <>
-                          <Cell cell={row.tuesdayA} />
-                          <Cell cell={row.tuesdayB} />
+                          <Cell cell={row.tuesdayA} editing={isEditing} onChange={(update) => updateCell(rowIndex, 'tuesdayA', update)} />
+                          <Cell cell={row.tuesdayB} editing={isEditing} onChange={(update) => updateCell(rowIndex, 'tuesdayB', update)} />
                         </>
                       ) : activeFilter === 'groupA' ? (
                         <Cell cell={row.tuesdayA} />
@@ -189,8 +218,8 @@ export default function Stundenplan() {
                       {/* Wednesday Cell(s) */}
                       {activeFilter === 'all' ? (
                         <>
-                          <Cell cell={row.wednesdayA} />
-                          <Cell cell={row.wednesdayB} />
+                          <Cell cell={row.wednesdayA} editing={isEditing} onChange={(update) => updateCell(rowIndex, 'wednesdayA', update)} />
+                          <Cell cell={row.wednesdayB} editing={isEditing} onChange={(update) => updateCell(rowIndex, 'wednesdayB', update)} />
                         </>
                       ) : activeFilter === 'groupA' ? (
                         <Cell cell={row.wednesdayA} />
@@ -201,8 +230,8 @@ export default function Stundenplan() {
                       {/* Thursday Cell(s) */}
                       {activeFilter === 'all' ? (
                         <>
-                          <Cell cell={row.thursdayA} />
-                          <Cell cell={row.thursdayB} />
+                          <Cell cell={row.thursdayA} editing={isEditing} onChange={(update) => updateCell(rowIndex, 'thursdayA', update)} />
+                          <Cell cell={row.thursdayB} editing={isEditing} onChange={(update) => updateCell(rowIndex, 'thursdayB', update)} />
                         </>
                       ) : activeFilter === 'groupA' ? (
                         <Cell cell={row.thursdayA} />
@@ -213,8 +242,8 @@ export default function Stundenplan() {
                       {/* Friday Cell(s) */}
                       {activeFilter === 'all' ? (
                         <>
-                          <Cell cell={row.fridayA} />
-                          <Cell cell={row.fridayB} />
+                          <Cell cell={row.fridayA} editing={isEditing} onChange={(update) => updateCell(rowIndex, 'fridayA', update)} />
+                          <Cell cell={row.fridayB} editing={isEditing} onChange={(update) => updateCell(rowIndex, 'fridayB', update)} />
                         </>
                       ) : activeFilter === 'groupA' ? (
                         <Cell cell={row.fridayA} />
@@ -342,7 +371,18 @@ export default function Stundenplan() {
 }
 
 // Singular Cell representing a single lesson
-function Cell({ cell }: { cell: { subject: string; teacherCode: string } }) {
+function Cell({ cell, editing = false, onChange }: { cell: TimetableCell; editing?: boolean; onChange?: (update: Partial<TimetableCell>) => void }) {
+  if (editing) {
+    return (
+      <td className="p-1.5 border-r border-slate-200/60 min-w-[90px]">
+        <div className="rounded-xl border border-primary/20 bg-primary/5 p-2 min-h-[84px]">
+          <input value={cell.subject} onChange={(event) => onChange?.({ subject: event.target.value })} className="w-full px-1.5 py-1 rounded border border-outline-variant text-xs font-bold" placeholder="Fach" aria-label="Fach bearbeiten" />
+          <input value={cell.teacherCode} onChange={(event) => onChange?.({ teacherCode: event.target.value })} className="w-full mt-1.5 px-1.5 py-1 rounded border border-outline-variant text-[10px]" placeholder="Lehrperson-Code" aria-label="Lehrperson-Code bearbeiten" />
+          <input value={cell.room ?? ''} onChange={(event) => onChange?.({ room: event.target.value })} className="w-full mt-1.5 px-1.5 py-1 rounded border border-outline-variant text-[10px]" placeholder="Raum" aria-label="Raum bearbeiten" />
+        </div>
+      </td>
+    );
+  }
   if (!cell.subject) {
     return (
       <td 
@@ -351,7 +391,7 @@ function Cell({ cell }: { cell: { subject: string; teacherCode: string } }) {
     );
   }
 
-  const { colorClass, borderClass, bgClass, room: subjectRoom, teacherName } = getSubjectDetails(cell.subject);
+  const { colorClass, borderClass, bgClass, room: subjectRoom, teacherName } = getSubjectDetails(cell.subject, cell.room, cell.teacherCode);
 
   return (
     <td className="p-1.5 border-r border-slate-200/60 min-w-[70px]">

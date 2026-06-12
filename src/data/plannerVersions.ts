@@ -1,4 +1,5 @@
 import { SCHOOL_INFO, TIMETABLE_DATA, TimetableRow } from './timetable';
+import { CalendarEvent } from '../types';
 
 const empty = { subject: '', teacherCode: '' };
 const cell = (subject: string, teacherCode = subject) => ({ subject, teacherCode });
@@ -9,10 +10,18 @@ export interface PlannerVersion {
   storagePrefix: string;
   schoolInfo: typeof SCHOOL_INFO;
   timetable: TimetableRow[];
+  initialEvents: CalendarEvent[];
   initialDate: Date;
   minDate?: Date;
   maxDate?: Date;
 }
+
+const CURRENT_EVENTS: CalendarEvent[] = [
+  { id: 'christmas-2025', title: 'Weihnachten', type: 'public-holiday', startDate: '2025-12-25', endDate: '2025-12-25' },
+  { id: 'new-year-2026', title: 'Neujahr', type: 'public-holiday', startDate: '2026-01-01', endDate: '2026-01-01' },
+  { id: 'ascension-2026', title: 'Auffahrt', type: 'public-holiday', startDate: '2026-05-14', endDate: '2026-05-14' },
+  { id: 'planning-2026', title: 'Planungstag', type: 'event', startDate: '2026-06-11', endDate: '2026-06-11' },
+];
 
 export const TIMETABLE_2526: TimetableRow[] = [
   { time: '07:25–08:10', mondayA: empty, mondayB: empty, tuesdayA: empty, tuesdayB: empty, wednesdayA: cell('Mu', 'MU'), wednesdayB: cell('Mu', 'MU'), thursdayA: empty, thursdayB: empty, fridayA: empty, fridayB: empty },
@@ -32,6 +41,7 @@ export const PLANNER_VERSIONS: Record<PlannerVersion['id'], PlannerVersion> = {
     storagePrefix: 'lehrerplaner',
     schoolInfo: SCHOOL_INFO,
     timetable: TIMETABLE_DATA,
+    initialEvents: CURRENT_EVENTS,
     initialDate: new Date(),
   },
   '2526': {
@@ -49,6 +59,7 @@ export const PLANNER_VERSIONS: Record<PlannerVersion['id'], PlannerVersion> = {
       notice: 'Planungszeitraum: 12.06.2026 bis 03.07.2026.',
     },
     timetable: TIMETABLE_2526,
+    initialEvents: [],
     initialDate: new Date(2026, 5, 12),
     minDate: new Date(2026, 5, 12),
     maxDate: new Date(2026, 6, 3),

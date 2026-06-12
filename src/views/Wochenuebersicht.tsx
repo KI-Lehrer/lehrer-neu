@@ -2,12 +2,15 @@ import { getSubjectDetails } from '../data/timetable';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { addDays, formatDate, getIsoWeek, getWeekDays, startOfWeek, toDateKey } from '../utils/date';
 import { usePlanner } from '../context/PlannerContext';
+import { LessonPlan } from '../types';
 
 const dayKeys = ['mondayA', 'tuesdayA', 'wednesdayA', 'thursdayA', 'fridayA'] as const;
+const emptyPlan: LessonPlan = { topic: '', homework: '', notes: '' };
 
 export default function Wochenuebersicht() {
-  const { planner, selectedDate, setSelectedDate } = usePlanner();
+  const { planner, selectedDate, setSelectedDate, timetable, events } = usePlanner();
   const [notes, setNotes] = useLocalStorage<Record<string, string>>(`${planner.storagePrefix}.week-notes`, {});
+  const [plans, setPlans] = useLocalStorage<Record<string, LessonPlan>>(`${planner.storagePrefix}.lesson-plans`, {});
   const monday = startOfWeek(selectedDate);
   const days = getWeekDays(monday);
   const previousWeek = addDays(selectedDate, -7);
@@ -34,7 +37,9 @@ export default function Wochenuebersicht() {
         {days.map((day, index) => {
           const key = toDateKey(day);
           const inRange = (!planner.minDate || day >= planner.minDate) && (!planner.maxDate || day <= planner.maxDate);
-          const lessons = inRange ? planner.timetable.map((row) => ({ time: row.time, cell: row[dayKeys[index]] })).filter(({ cell }) => cell.subject) : [];
+          const dayEvents = events.filter((event) => event.startDate <= key && event.endDate >= key);
+          const isDayOff = dayEvents.some((event) => event.type !== 'event');
+          const lessons = inRange && !isDayOff ? timetable.map((row, lessonIndex) => ({ index: lessonIndex, time: row.time, cell: row[dayKeys[index]] })).filter(({ cell }) => cell.subject) : [];
           return (
             <article key={key} className="bg-white border border-outline-variant rounded-3xl shadow-sm flex flex-col min-h-[620px]">
               <header className="p-5 border-b border-outline-variant bg-slate-50 rounded-t-3xl">
@@ -43,12 +48,19 @@ export default function Wochenuebersicht() {
               </header>
               <div className="p-4 flex-1 flex flex-col gap-3">
                 {!inRange && <p className="text-xs font-bold text-outline text-center py-6">Ausserhalb des Planungszeitraums</p>}
-                {lessons.map(({ time, cell }, lessonIndex) => {
-                  const details = getSubjectDetails(cell.subject);
+                {dayEvents.map((event) => <p key={event.id} className={`p-2 rounded-xl text-xs font-bold ${event.type === 'event' ? 'bg-amber-50 text-amber-900' : 'bg-rose-50 text-rose-900'}`}>{event.title}</p>)}
+                {lessons.map(({ index: lessonIndex, time, cell }) => {
+                  const details = getSubjectDetails(cell.subject, cell.room, cell.teacherCode);
+                  const planKey = `${key}-${lessonIndex}`;
+                  const plan = plans[planKey] ?? emptyPlan;
+                  const updatePlan = (update: Partial<LessonPlan>) => setPlans((current) => ({ ...current, [planKey]: { ...plan, ...update } }));
                   return (
                     <div key={`${time}-${lessonIndex}`} className={`p-3 border-l-4 ${details.borderClass} ${details.bgClass} rounded-r-xl`}>
                       <span className={`text-[10px] font-bold uppercase ${details.colorClass}`}>{time} · {cell.subject}</span>
                       <p className="font-semibold text-sm mt-1">{details.teacherName}</p>
+                      <input value={plan.topic} onChange={(event) => updatePlan({ topic: event.target.value })} className="w-full mt-2 px-2 py-1.5 rounded-lg border border-white/80 bg-white/75 text-xs outline-none focus:border-primary" placeholder="Thema der Stunde" aria-label={`Thema ${formatDate(day, { weekday: 'long' })} ${time}`} />
+                      <input value={plan.homework} onChange={(event) => updatePlan({ homework: event.target.value })} className="w-full mt-1.5 px-2 py-1.5 rounded-lg border border-white/80 bg-white/75 text-xs outline-none focus:border-primary" placeholder="Hausaufgaben" aria-label={`Hausaufgaben ${formatDate(day, { weekday: 'long' })} ${time}`} />
+                      <textarea value={plan.notes} onChange={(event) => updatePlan({ notes: event.target.value })} className="w-full mt-1.5 px-2 py-1.5 min-h-[56px] rounded-lg border border-white/80 bg-white/75 text-xs outline-none resize-y focus:border-primary" placeholder="Notizen / Reflexion" aria-label={`Notizen ${formatDate(day, { weekday: 'long' })} ${time}`} />
                     </div>
                   );
                 })}
