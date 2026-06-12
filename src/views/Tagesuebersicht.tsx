@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { TimetableCell, getSubjectDetails } from '../data/timetable';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { LessonPlan } from '../types';
@@ -14,6 +14,38 @@ const dayColumns = {
 } as const;
 
 const emptyPlan: LessonPlan = { topic: '', homework: '', notes: '' };
+
+function AutoGrowingTextarea({
+  value,
+  onChange,
+  placeholder,
+  minHeight = 64,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  minHeight?: number;
+}) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useLayoutEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    textarea.style.height = 'auto';
+    textarea.style.height = `${Math.max(textarea.scrollHeight, minHeight)}px`;
+  }, [minHeight, value]);
+
+  return (
+    <textarea
+      ref={textareaRef}
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      className="w-full py-2 mt-2 bg-transparent text-on-surface text-sm leading-relaxed border-b border-outline-variant outline-none focus:border-primary resize-y overflow-hidden normal-case whitespace-pre-wrap"
+      placeholder={placeholder}
+      style={{ minHeight }}
+    />
+  );
+}
 
 export default function Tagesuebersicht() {
   const { planner, selectedDate: today, setSelectedDate } = usePlanner();
@@ -107,18 +139,18 @@ export default function Tagesuebersicht() {
                 <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                   <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider">
                     Thema der Stunde
-                    <input value={plan.topic} onChange={(event) => updatePlan(index, { topic: event.target.value })} className="w-full py-2 mt-2 bg-transparent text-on-surface font-semibold text-sm border-b border-outline-variant outline-none focus:border-primary" placeholder="Thema eintragen" />
+                    <AutoGrowingTextarea value={plan.topic} onChange={(topic) => updatePlan(index, { topic })} placeholder="Thema eintragen" />
                   </label>
                   <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider">
                     Hausaufgaben
-                    <input value={plan.homework} onChange={(event) => updatePlan(index, { homework: event.target.value })} className="w-full py-2 mt-2 bg-transparent text-on-surface text-sm border-b border-outline-variant outline-none focus:border-primary" placeholder="Hausaufgaben eintragen" />
+                    <AutoGrowingTextarea value={plan.homework} onChange={(homework) => updatePlan(index, { homework })} placeholder="Hausaufgaben eintragen" />
                   </label>
                   <div className="text-xs font-semibold text-on-surface-variant">
                     <span className="material-symbols-outlined text-[16px] text-primary">room</span> {details.room}
                   </div>
                   <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider">
                     Reflexion / Notizen
-                    <textarea value={plan.notes} onChange={(event) => updatePlan(index, { notes: event.target.value })} className="w-full py-2 mt-2 min-h-[70px] text-sm border-b border-outline-variant bg-transparent resize-none outline-none focus:border-primary" placeholder="Beobachtungen und nächste Schritte..." />
+                    <AutoGrowingTextarea value={plan.notes} onChange={(notes) => updatePlan(index, { notes })} placeholder="Beobachtungen und nächste Schritte..." minHeight={70} />
                   </label>
                 </div>
               </article>
