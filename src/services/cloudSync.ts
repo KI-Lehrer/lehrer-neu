@@ -5,8 +5,27 @@ interface CloudRecord<T> {
   updatedAt: number;
 }
 
-const DEFAULT_SYNC_ENDPOINT = 'https://lehrerplaner-sync.luescher-sascha.workers.dev';
-const getEndpoint = () => (window.localStorage.getItem('lehrerplaner.sync-endpoint') || import.meta.env.VITE_SYNC_ENDPOINT || DEFAULT_SYNC_ENDPOINT).replace(/\/$/, '');
+const DEFAULT_SYNC_ENDPOINT = 'https://lehrerplaner-sync.schulgeraete.workers.dev';
+const LEGACY_SYNC_ORIGIN = 'https://lehrerplaner-sync.luescher-sascha.workers.dev';
+
+// Existing browsers and build settings may still carry the previous account subdomain.
+const normalizeEndpoint = (endpoint: string) => {
+  const value = endpoint.trim().replace(/\/$/, '');
+  try {
+    const url = new URL(value);
+    if (url.origin === LEGACY_SYNC_ORIGIN) {
+      url.hostname = 'lehrerplaner-sync.schulgeraete.workers.dev';
+      return url.toString().replace(/\/$/, '');
+    }
+  } catch { /* Keep custom settings unchanged; fetch will report invalid URLs. */ }
+  return value;
+};
+const getEndpoint = () => {
+  const stored = window.localStorage.getItem('lehrerplaner.sync-endpoint');
+  const endpoint = normalizeEndpoint(stored || import.meta.env.VITE_SYNC_ENDPOINT || DEFAULT_SYNC_ENDPOINT);
+  if (stored && endpoint !== stored) window.localStorage.setItem('lehrerplaner.sync-endpoint', endpoint);
+  return endpoint;
+};
 const getToken = () => window.localStorage.getItem('lehrerplaner.sync-token') || '';
 
 export const isCloudSyncConfigured = () => Boolean(getEndpoint() && getToken());
@@ -14,7 +33,7 @@ export const isCloudSyncConfigured = () => Boolean(getEndpoint() && getToken());
 export const getCloudSyncSettings = () => ({ endpoint: getEndpoint(), token: getToken() });
 
 export const saveCloudSyncSettings = (endpoint: string, token: string) => {
-  window.localStorage.setItem('lehrerplaner.sync-endpoint', endpoint.trim().replace(/\/$/, ''));
+  window.localStorage.setItem('lehrerplaner.sync-endpoint', normalizeEndpoint(endpoint));
   window.localStorage.setItem('lehrerplaner.sync-token', token.trim());
   window.location.reload();
 };
